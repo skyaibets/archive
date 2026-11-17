@@ -50,6 +50,7 @@ button:disabled{opacity:.6;cursor:default}
 .pill.win{background:var(--okbg);color:var(--ok)}.pill.lose{background:var(--badbg);color:var(--bad)}.pill.wait{background:var(--panel2);color:var(--muted)}
 .links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin-top:4px}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+details summary{cursor:pointer;margin:6px 0}
 .hash{font:12px 'JetBrains Mono',monospace;color:var(--muted)}
 .res{padding:10px 16px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
 .steps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:72ch}
@@ -63,13 +64,14 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
 <div class="wrap">
   <header>
     <h1>Sky AI Bets — открытый архив</h1>
-    <p class="lead">Здесь каждое решение бота по каждой объявленной в канале карте — и ставки, и пропуски. Каждая запись подписана, связана с предыдущей и в момент решения отправлена в блокчейн Bitcoin: изменить или дописать прошлое задним числом нельзя.</p>
+    <p class="lead">Здесь все решения бота по каждой карте из канала: и ставки, и пропуски. Каждое решение записывается в момент, когда оно принято, — до конца матча. После этого запись уже нельзя незаметно изменить или удалить, поэтому архиву можно верить: результаты не подгоняются, проигрыши не прячутся.</p>
+    <p class="lead">Архив ведётся с 17.11.2026, 21:00 МСК. Ставки №1 и №2 были сделаны раньше и добавлены вручную — они отмечены «добавлено вручную». Пропуски записываются начиная с запуска архива.</p>
   </header>
 
   <section class="tiles" id="tiles"></section>
 
   <section class="card verify">
-    <div class="vres" id="vres"><b>Проверка архива</b><br><span class="muted">Нажмите — браузер сам скачает архив, пересчитает отпечаток каждой записи и проверит подписи. Нам доверять не нужно.</span></div>
+    <div class="vres" id="vres"><b>Проверка архива</b><br><span class="muted">Нажмите — страница сама проверит каждую запись: что её не меняли после публикации и что её сделал бот этого канала. Занимает пару секунд.</span></div>
     <button id="vbtn" disabled>Проверить архив</button>
   </section>
 
@@ -84,17 +86,23 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
   <section class="maps" id="maps"><p class="muted">Загружаю архив…</p></section>
 
   <section class="card">
-    <h2>Как проверить самому</h2>
+    <h2>Почему архиву можно верить</h2>
     <ol class="steps">
-      <li><b>Записано заранее.</b> У каждого решения есть отметка в Bitcoin (OpenTimestamps), поставленная в момент решения — задолго до конца карты. Файлы отметок лежат в папке <code>stamps/</code>; проверить любой можно на <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a>: перетащите туда <code>.ots</code> и соответствующий <code>.txt</code>.</li>
-      <li><b>Ничего не стёрто и не переписано.</b> Каждая запись содержит отпечаток предыдущей (<code>prev_hash</code>). Изменить старую строку незаметно нельзя: сломаются все отпечатки после неё — кнопка «Проверить архив» сразу это покажет.</li>
-      <li><b>Ничего не спрятано.</b> По каждой карте из поста «Идёт драфт» в архиве есть решение на каждом моменте: ставка или пропуск с линией букмекера и прогнозом модели. Проигрыш нельзя тихо превратить в «не ставили».</li>
-      <li><b>Коэффициент был на самом деле.</b> К ставке приложен скриншот BetBoom в момент решения (его отпечаток записан в ставке) и проверка линии через 30–40 секунд.</li>
-      <li><b>Результат честный.</b> У каждой карты ссылка на матч в OpenDota — там видно реальное число убийств.</li>
-      <li><b>Это пишем именно мы.</b> Каждая запись подписана ключом бота (Ed25519). Открытый ключ — в файле <code>pubkey.txt</code> и в закреплённом посте канала.</li>
+      <li><b>Решение записывается сразу.</b> Ставка или пропуск попадают в архив в тот же момент, когда бот принимает решение, — задолго до конца карты. Время записи фиксируется в блокчейне Bitcoin: подделать его не может никто, в том числе мы.</li>
+      <li><b>Прошлое нельзя переписать.</b> Записи связаны друг с другом в цепочку. Если поменять хотя бы одну старую запись, цепочка «порвётся» — кнопка «Проверить архив» сразу это покажет.</li>
+      <li><b>Проигрыши не спрятать.</b> По каждой карте из канала записаны все три момента — после драфта, 10-я и 15-я минута: либо ставка, либо пропуск с причиной.</li>
+      <li><b>Коэффициент был на самом деле.</b> К каждой ставке приложен скриншот BetBoom в момент ставки и линия через 30–40 секунд — видно, что поставить было реально.</li>
+      <li><b>Результат честный.</b> У каждой карты есть ссылка на матч в OpenDota — там видно реальное число убийств.</li>
     </ol>
-    <p>Проверка без браузера: скачайте репозиторий и запустите</p>
-    <pre>python3 verify.py</pre>
+    <details>
+      <summary><b>Для тех, кто хочет проверить вручную</b></summary>
+      <ol class="steps">
+        <li>Скачайте весь архив одним файлом: <a href="https://github.com/skyaibets/archive/archive/refs/heads/main.zip">archive.zip</a> (там все записи, отметки времени и скриншоты). Исходники: <a href="https://github.com/skyaibets/archive" target="_blank" rel="noopener">github.com/skyaibets/archive</a>.</li>
+        <li>Цепочку и подписи: распакуйте архив и выполните в этой папке <code>python3 verify.py</code>.</li>
+        <li>Время в Bitcoin: у каждой записи на этой странице есть ссылка «отметка времени». Скачайте оба файла (<code>.txt</code> и <code>.ots</code>) и перетащите их на <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a> — сайт покажет, в каком блоке и когда запись появилась.</li>
+        <li>Подпись: каждая запись подписана ключом бота. Его открытая часть — <code id="pubkey">…</code> (файл <code>pubkey.txt</code>).</li>
+      </ol>
+    </details>
   </section>
 
 </div>
@@ -119,7 +127,7 @@ async function load(){
     fetch("config.json").then(r=>r.json()).catch(()=>({})),fetch("stamps/status.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({})),
     fetch("pubkey.txt").then(r=>r.text()).catch(()=>"")]);
   R=l.split("\n").filter(Boolean).map(x=>JSON.parse(x));cfg=c;status=s;pub=k.trim();
-  render();$("#vbtn").disabled=false;
+  render();$("#vbtn").disabled=false;const pk=document.getElementById("pubkey");if(pk)pk.textContent=pub;
   if(location.hash)setTimeout(focusHash,50);
 }
 
@@ -136,8 +144,8 @@ async function verifyAll(){
     prev=r.hash;
   }
   const stamped=R.filter(r=>status[r.seq]).length, inBlock=R.filter(r=>status[r.seq]&&status[r.seq].block).length;
-  $("#vres").innerHTML=bad?`<b class="bad">❌ Найдено расхождение в записи №${bad.seq}</b><br>${bad.why}.`
-   :`<b class="ok">✅ Архив цел: ${R.length} записей</b><br><span class="muted">Все отпечатки пересчитаны и сходятся, все подписи верны (ключ ${pub.slice(0,10)}…). В Bitcoin подтверждено ${inBlock} из ${R.length}, остальные ждут блока (обычно до нескольких часов).</span>`;
+  $("#vres").innerHTML=bad?`<b class="bad">❌ Запись №${bad.seq} не прошла проверку</b><br>Её изменили после публикации или она сделана не ботом канала.`
+   :`<b class="ok">✅ Всё в порядке</b><br><span class="muted">Проверено записей: ${R.length}. Ни одну не меняли после публикации, все сделаны ботом канала. Время ${inBlock===R.length?"всех записей уже закреплено в Bitcoin":`уже закреплено в Bitcoin у ${inBlock} из ${R.length}; у остальных закрепится в течение нескольких часов`}.</span>`;
   btn.disabled=false;btn.textContent="Проверить ещё раз";render();
 }
 
@@ -167,10 +175,12 @@ function render(){
   drawChart(done.map(b=>results[b.bet_no].bank_after));
   const f=document.querySelector(".chip.on").dataset.f;
   const ch=cfg.channel;
-  const link=id=>ch&&id?`<a href="https://t.me/${ch}/${id}" target="_blank" rel="noopener">пост в канале</a>`:"";
-  const stampBadge=seq=>{const s=status[seq];if(!s)return `<span class="muted">⏳ отправляется в Bitcoin</span>`;
-    return s.block?`<a href="https://mempool.space/block/${s.block}" target="_blank" rel="noopener">₿ блок ${s.block}</a>`:`<span class="muted">₿ ждёт блока</span>`};
-  const vb=seq=>verdict[seq]===undefined?"":verdict[seq]?`<span class="ok">✅ подпись</span>`:`<span class="bad">❌ не сходится</span>`;
+  const link=(id,label)=>ch&&id?`<a href="https://t.me/${ch}/${id}" target="_blank" rel="noopener">${label}</a>`:"";
+  const stampFile=seq=>`stamps/${String(seq).padStart(6,"0")}.txt`;
+  const stampBadge=seq=>{const s=status[seq];
+    const t=s&&s.block?`₿ время закреплено`:`₿ закрепляется`;
+    return `<a href="${stampFile(seq)}.ots" title="Отметка времени в Bitcoin: файлы ${stampFile(seq)} и .ots для opentimestamps.org" class="${s&&s.block?"":"muted"}">${t}</a>`};
+  const vb=seq=>verdict[seq]===undefined?"":verdict[seq]?`<span class="ok">✅ проверено</span>`:`<span class="bad">❌ не прошла проверку</span>`;
   const html=order.slice().reverse().filter(k=>f==="all"||maps[k].dec.some(d=>d.action==="BET")).map(k=>{
     const {m,dec,settle,post}=maps[k];
     const rows=dec.map(d=>{
@@ -179,16 +189,16 @@ function render(){
       if(d.action==="BET"){
         cls="bet";const r=results[d.bet_no];const rc=rechecks[d.bet_no];
         main=`🎯 Ставка №${d.bet_no}: ${d.side==="over"?"больше":"меньше"} ${d.line} · кэф ${d.odds} · ${rub(d.stake)}`;
-        extra=`<div class="links">${link(posts[d.seq])}${d.screen_sha256?` <a href="screens/${d.screen_sha256}.jpg" target="_blank">скриншот BetBoom</a>`:""}${rc?` <span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}</div>`;
+        extra=`<div class="links">${link(posts[d.seq],"пост со ставкой")}${d.screen_sha256?` <a href="screens/${d.screen_sha256}.jpg" target="_blank">скриншот BetBoom</a>`:""}${rc?` <span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}</div>`;
         var pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
       }else{main=`⏸ Пропуск`;var pill="";}
       return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
         <div class="stage">${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
-        <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>${extra}<div class="hash">#${d.seq} ${d.hash.slice(0,16)}…</div></div>
+        <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>${extra}<div class="hash" title="${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
         <div class="badges">${pill}${stampBadge(d.seq)}${vb(d.seq)}</div></div>`}).join("")||`<div class="row"><div class="what muted">Решений пока нет</div></div>`;
     const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
     return `<article class="map"><div class="maph"><b>${m.radiant} — ${m.dire}${m.game_no?" · карта "+m.game_no:""}</b>
-      <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+link(post):""}${m.backfilled?" · внесено задним числом":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("");
+      <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+link(post,"пост о карте"):""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("");
   $("#maps").innerHTML=html||`<p class="muted">Записей пока нет.</p>`;
 }
 
