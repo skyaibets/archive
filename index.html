@@ -196,8 +196,8 @@ function render(){
         extra=`<div class="links">${link(posts[d.seq],"пост со ставкой")}${d.screen_sha256?` <a href="screens/${d.screen_sha256}.jpg" target="_blank">скриншот BetBoom</a>`:""}${rc?` <span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}</div>`;
         var pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
       }else{main=`⏸ Пропуск`;var pill="";}
-      return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}"><span id="${d.action==="BET"?"r"+d.seq:""}"></span>
-        <div class="stage">${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
+      return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
+        <div class="stage">${d.action==="BET"?`<span id="r${d.seq}"></span>`:""}${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
         <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>${extra}<div class="links">${snapLink(d.seq,d.backfilled)}</div><div class="hash" title="${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
         <div class="badges">${pill}${vb(d.seq)}</div></div>`}).join("")||`<div class="row"><div class="what muted">Решений пока нет</div></div>`;
     const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
