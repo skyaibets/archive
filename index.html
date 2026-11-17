@@ -177,7 +177,7 @@ function render(){
   const html=order.slice().reverse().filter(k=>f==="all"||maps[k].dec.some(d=>d.action==="BET")).map(k=>{
     const {m,dec,settle,post}=maps[k];
     const rows=dec.map(d=>{
-      const book=d.book?`БК ${d.book.line} (больше ${d.book.over} / меньше ${d.book.under})`:"у БК не было линии";
+      const book=d.book?`БК ${d.book.line} (больше ${d.book.over} / меньше ${d.book.under})`:d.backfilled?"линия БК не записана (до запуска архива)":"у БК не было линии";
       let main,cls="",extra="";
       if(d.action==="BET"){
         cls="bet";const r=results[d.bet_no];const rc=rechecks[d.bet_no];
