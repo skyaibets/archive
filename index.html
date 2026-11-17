@@ -199,7 +199,7 @@ function render(){
       return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
         <div class="stage">${d.action==="BET"?`<span id="r${d.seq}"></span>`:""}${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
         <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>${extra}<div class="links">${snapLink(d.seq,d.backfilled)}</div><div class="hash" title="${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
-        <div class="badges">${pill}${vb(d.seq)}</div></div>`}).join("")||`<div class="row"><div class="what muted">Решений пока нет</div></div>`;
+        <div class="badges">${pill}${vb(d.seq)}</div></div>`}).join("")||`<div class="row"><div class="what muted" style="grid-column:1/-1">Решений пока нет — первое появится после драфта</div></div>`;
     const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
     return `<article class="map"><div class="maph"><b>${m.radiant} — ${m.dire}${m.game_no?" · карта "+m.game_no:""}</b>
       <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+link(post,"пост о карте"):""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("");
