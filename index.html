@@ -261,7 +261,7 @@ async function check(seq){
     const said=r?(r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"):"ещё не рассчитана";const real=push?"возврат":won?"зашла":"не зашла";
     out.push(`<div class="step ${!r||said===real?"ok":"bad"}"><b>${!r||said===real?"✅":"❌"} ${total} убийств при линии ${d.line}: ставка на ${d.side==="over"?"больше":"меньше"} ${real}.</b> В архиве: ${said}.</div>`)}
   const st=stamps[seq],file=`stamps/${String(seq).padStart(6,"0")}.txt`;
-  out.push(`<div class="step src">₿ Bitcoin: ${st&&st.block?`отметка подтверждена в блоке <a href="https://mempool.space/block/${st.block}" target="_blank" rel="noopener">${st.block}</a>`:`отметка ждёт попадания в блок (до нескольких часов)`}. Файлы этой записи для opentimestamps.org: <a href="${file}" download>${file.slice(7)}</a> и <a href="${file}.ots" download>${file.slice(7)}.ots</a></div>`);
+  out.push(`<div class="step src">₿ Bitcoin: ${st&&st.block?`отметка подтверждена в блоке <a href="https://mempool.space/block/${st.block}" target="_blank" rel="noopener">${st.block}</a>`:`отметка ждёт попадания в блок (до нескольких часов)`}. Файлы этой записи для opentimestamps.org: <a href="${file}?v=${st?st.checked:Date.now()}" download="${file.slice(7)}">${file.slice(7)}</a> и <a href="${file}.ots?v=${st?st.checked:Date.now()}" download="${file.slice(7)}.ots">${file.slice(7)}.ots</a></div>`);
   box.innerHTML=out.join("");
 }
 
