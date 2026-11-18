@@ -127,6 +127,7 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
       <p>Исходники архива: <a href="https://github.com/skyaibets/archive" target="_blank" rel="noopener">github.com/skyaibets/archive</a>.</p></div></details>
     <details><summary>Как проверить отметку времени в блокчейне Bitcoin</summary><div class="body">
       <p>Кроме Интернет-архива, отпечаток каждой записи сразу отправляется в блокчейн Bitcoin через бесплатный сервис OpenTimestamps. В течение нескольких часов он попадает в блок, и после этого время записи можно доказать, даже если исчезнет и наш сайт, и Интернет-архив.</p>
+      <p>Нумерация записей общая для всего архива и идёт строго по времени: кроме ставок и пропусков, свои номера есть у объявления карты, поста в канале, проверки линии после ставки и итога карты — они подписаны на странице рядом с тем, к чему относятся. Поэтому номера решений идут не подряд, но ни один номер не пропущен.</p>
       <p>У каждого решения на странице написано, например, «Запись №22 · код cd0fbeb1». <b>Номер</b> — место записи в архиве, по нему называются её файлы. <b>Код</b> — первые 8 символов её отпечатка; тот же код стоит в посте со ставкой в канале (🔐).</p>
       <ol>
         <li>Нажмите «Проверить ставку» (или «Проверить пропуск») у нужного решения. В самом низу ответа будут две ссылки — файлы этой записи, например <code>000022.txt</code> и <code>000022.txt.ots</code>. Скачайте оба. (Все файлы отметок лежат и в папке <a href="https://github.com/skyaibets/archive/tree/main/stamps" target="_blank" rel="noopener">stamps</a> на GitHub: номер записи, дополненный нулями до шести цифр.)</li>
@@ -159,15 +160,15 @@ async function load(){
 
 function index(){
   const maps={},order=[],bySeq={};R.forEach(r=>bySeq[r.seq]=r);
-  const posts={},rechecks={},results={};
+  const posts={},postSeq={},rechecks={},results={};
   for(const r of R){
     if(r.type==="MAP"){maps[r.map]={m:r,dec:[],settle:null,post:null};order.push(r.map)}
-    if(r.type==="POST"){posts[r.of_seq]=r.post_id;const o=bySeq[r.of_seq];if(o&&o.type==="MAP"&&maps[o.map])maps[o.map].post=r.post_id}
+    if(r.type==="POST"){posts[r.of_seq]=r.post_id;postSeq[r.of_seq]=r.seq;const o=bySeq[r.of_seq];if(o&&o.type==="MAP"&&maps[o.map]){maps[o.map].post=r.post_id;maps[o.map].postSeq=r.seq}}
     if(r.type==="RECHECK")rechecks[r.bet_no]=r;
     if(r.type==="DECISION"&&maps[r.map])maps[r.map].dec.push(r);
     if(r.type==="SETTLE"&&maps[r.map]){maps[r.map].settle=r;r.bets.forEach(b=>results[b.bet_no]=b)}
   }
-  M={maps,order:order.reverse(),posts,rechecks,results};
+  M={maps,order:order.reverse(),posts,postSeq,rechecks,results};
 }
 
 function tiles(){
@@ -195,7 +196,7 @@ function rowHtml(d,settle){
   if(d.action==="BET"){
     cls="bet";const r=M.results[d.bet_no],rc=M.rechecks[d.bet_no];
     main=`🎯 Ставка №${d.bet_no}: ${d.side==="over"?"больше":"меньше"} ${d.line} · кэф ${d.odds} · ${rub(d.stake)}`;
-    extra=`${tg(M.posts[d.seq],"Пост со ставкой")}${d.screen_sha256?`<a href="screens/${d.screen_sha256}.jpg" target="_blank">Скриншот линии</a>`:""}${rc?`<span>${rc.line!=null?`через ${rc.waited_s} с: линия ${rc.line}, кэф ${rc.odds}`:`через ${rc.waited_s} с линия не обновилась`}</span>`:""}`;
+    extra=`${tg(M.posts[d.seq],"Пост со ставкой")}${M.postSeq[d.seq]?`<span class="muted">запись №${M.postSeq[d.seq]}</span>`:""}${d.screen_sha256?`<a href="screens/${d.screen_sha256}.jpg" target="_blank">Скриншот линии</a>`:""}${rc?`<span>${rc.line!=null?`через ${rc.waited_s} с: линия ${rc.line}, кэф ${rc.odds}`:`через ${rc.waited_s} с линия не обновилась`} <span class="muted">· запись №${rc.seq}</span></span>`:""}`;
     pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
   }else main=`⏸ Пропуск`;
   return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
@@ -215,11 +216,11 @@ function render(){
   view.page=Math.min(Math.max(1,view.page),pages);
   const part=list.slice((view.page-1)*view.pp,view.page*view.pp);
   $("#maps").innerHTML=part.map(k=>{
-    const {m,dec,settle,post}=M.maps[k];
+    const {m,dec,settle,post,postSeq}=M.maps[k];
     const rows=dec.map(d=>rowHtml(d,settle)).join("")||`<div class="row"><div class="what muted" style="grid-column:1/-1">Решений пока нет — первое появится после драфта</div></div>`;
-    const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
+    const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств <span class="muted">(запись №${settle.seq})</span>${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
     return `<article class="map"><div class="maph"><b>${m.radiant} — ${m.dire}${m.game_no?" · карта "+m.game_no:""}</b>
-      <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+tg(post,"Пост о карте"):""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("")||`<p class="muted">Записей пока нет.</p>`;
+      <span class="meta">${m.league} · ${msk(m.ts)} МСК · запись №${m.seq}${post?" · "+tg(post,"Пост о карте")+` (запись №${postSeq})`:""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("")||`<p class="muted">Записей пока нет.</p>`;
   pager(pages);
   $("#count").textContent=list.length?`Карты ${(view.page-1)*view.pp+1}–${Math.min(view.page*view.pp,list.length)} из ${list.length}`:"";
   document.querySelectorAll("[data-pp]").forEach(b=>b.classList.toggle("on",+b.dataset.pp===view.pp));
