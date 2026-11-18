@@ -246,14 +246,15 @@ async function check(seq){
   if(settle&&settle.opendota_match_id){
     const odUrl=`https://api.opendota.com/api/matches/${settle.opendota_match_id}`;
     try{const j=await fetch(odUrl).then(r=>r.json());
-      if(j.start_time){endAt=j.start_time+j.duration;total=(j.radiant_score||0)+(j.dire_score||0);
-        out.push(`<div class="step">🎮 <b>OpenDota:</b> матч закончился ${msk(endAt)} МСК, убийств на карте — ${total}. <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Открыть матч</a><span class="src">Запрос: ${odUrl}</span></div>`)}}
+      if(j.start_time){endAt=j.start_time+(j.pre_game_duration||90)+j.duration;total=(j.radiant_score||0)+(j.dire_score||0);
+        const mm=Math.floor(j.duration/60),ss=String(j.duration%60).padStart(2,"0");
+        out.push(`<div class="step">🎮 <b>OpenDota:</b> драфт начался ${msk(j.start_time)} МСК, игра длилась ${mm}:${ss}, убийств на карте — ${total}. Значит, матч закончился не раньше ${msk(endAt)} МСК (точное время конца Valve не публикует). <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Открыть матч</a><span class="src">Запрос: ${odUrl}</span></div>`)}}
     catch(e){out.push(`<div class="step warn">OpenDota сейчас не ответил, попробуйте чуть позже.</div>`)}
   }else out.push(`<div class="step muted">🎮 Матч ещё не закончился или ещё не появился в OpenDota.</div>`);
-  if(snapAt&&endAt){const mins=Math.round((endAt-snapAt)/60);
-    out.push(mins>0?`<div class="step ok"><b>✅ Запись сделана за ${mins} мин до конца матча</b> — исход тогда ещё не был известен.</div>`
-      :d.backfilled?`<div class="step warn"><b>Снимок сделан после матча</b> — эта ставка была до запуска архива и добавлена вручную, о чём сказано вверху страницы.</div>`
-      :`<div class="step bad"><b>❌ Снимок сделан после конца матча.</b></div>`)}
+  if(snapAt&&endAt){
+    out.push(d.backfilled?`<div class="step warn"><b>Снимок сделан после матча</b> — эта ставка была до запуска архива и добавлена вручную, о чём сказано вверху страницы.</div>`
+      :snapAt<endAt?`<div class="step ok"><b>✅ Снимок сделан в ${msk(snapAt).slice(11)}, а матч не мог закончиться раньше ${msk(endAt).slice(11)}</b> — исход тогда ещё не был известен.</div>`
+      :`<div class="step muted">Снимок сделан в ${msk(snapAt).slice(11)}. Игра была короткой, и по открытым данным Valve нельзя точно сказать, закончилась ли она к этому моменту, — сверьте время поста в канале с ходом матча.</div>`)}
   if(d.action==="BET"&&total!==null){const won=d.side==="over"?total>d.line:total<d.line,push=total===d.line,r=M.results[d.bet_no];
     const said=r?(r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"):"ещё не рассчитана";const real=push?"возврат":won?"зашла":"не зашла";
     out.push(`<div class="step ${!r||said===real?"ok":"bad"}"><b>${!r||said===real?"✅":"❌"} ${total} убийств при линии ${d.line}: ставка на ${d.side==="over"?"больше":"меньше"} ${real}.</b> В архиве: ${said}.</div>`)}
