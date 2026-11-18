@@ -132,6 +132,7 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
         <li>Откройте <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a> и перетащите файл <code>.ots</code> в блок «Stamp &amp; Verify», затем — файл <code>.txt</code>.</li>
         <li>Сайт покажет: «Bitcoin block N attests existence as of …» — это дата, раньше которой запись уже существовала. Номер блока совпадёт с тем, что написан в проверке на нашей странице. Если отметка ещё не попала в блок, сайт напишет, что она ожидает подтверждения, — подождите несколько часов.</li>
       </ol>
+      <p>Если сайт пишет <b>«bitcoin verification failed: Failed to fetch»</b>, отметка тут ни при чём: opentimestamps.org проверяет блок через сервисы blockstream.info и mempool.space, а у части российских провайдеров они недоступны. Включите VPN или откройте сайт с другой сети (например, мобильного интернета) и повторите. Блок можно посмотреть и вручную на <a href="https://blockchair.com/bitcoin/blocks" target="_blank" rel="noopener">blockchair.com</a>: в файле <code>.ots</code> (кнопка «info» на opentimestamps.org) указан merkle root блока — он совпадёт с тем, что показывает обозреватель.</p>
       <p>Код записи на странице (например, <code>cd0fbeb1</code>) — первые символы её отпечатка. Тот же код стоит в посте со ставкой в канале (🔐) и в начале отпечатка внутри файла <code>.txt</code>.</p></div></details>
     <details><summary>Что такое подпись бота</summary><div class="body">
       <p>Каждая запись подписана секретным ключом, который есть только у бота. Подпись можно проверить открытым ключом — он опубликован здесь и в файле <code>pubkey.txt</code>: <code id="pubkey">…</code></p>
@@ -261,7 +262,7 @@ async function check(seq){
     const said=r?(r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"):"ещё не рассчитана";const real=push?"возврат":won?"зашла":"не зашла";
     out.push(`<div class="step ${!r||said===real?"ok":"bad"}"><b>${!r||said===real?"✅":"❌"} ${total} убийств при линии ${d.line}: ставка на ${d.side==="over"?"больше":"меньше"} ${real}.</b> В архиве: ${said}.</div>`)}
   const st=stamps[seq],file=`stamps/${String(seq).padStart(6,"0")}.txt`;
-  out.push(`<div class="step src">₿ Bitcoin: ${st&&st.block?`отметка подтверждена в блоке <a href="https://mempool.space/block/${st.block}" target="_blank" rel="noopener">${st.block}</a>`:`отметка ждёт попадания в блок (до нескольких часов)`}. Файлы этой записи для opentimestamps.org: <a href="${file}?v=${st?st.checked:Date.now()}" download="${file.slice(7)}">${file.slice(7)}</a> и <a href="${file}.ots?v=${st?st.checked:Date.now()}" download="${file.slice(7)}.ots">${file.slice(7)}.ots</a></div>`);
+  out.push(`<div class="step src">₿ Bitcoin: ${st&&st.block?`отметка подтверждена в блоке <a href="https://blockchair.com/bitcoin/block/${st.block}" target="_blank" rel="noopener">${st.block}</a>`:`отметка ждёт попадания в блок (до нескольких часов)`}. Файлы этой записи для opentimestamps.org: <a href="${file}?v=${st?st.checked:Date.now()}" download="${file.slice(7)}">${file.slice(7)}</a> и <a href="${file}.ots?v=${st?st.checked:Date.now()}" download="${file.slice(7)}.ots">${file.slice(7)}.ots</a></div>`);
   box.innerHTML=out.join("");
 }
 
