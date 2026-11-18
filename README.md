@@ -20,7 +20,7 @@
 ## Для специалистов
 
 - **Цепочка записей.** `python3 verify.py` пересчитывает отпечаток (SHA-256) каждой записи и проверяет ссылку на предыдущую. `python3 verify.py --demo` показывает, как ловится подделка. Подписи бота проверяются после `pip install pynacl`.
-- **Отметки в Bitcoin.** У каждой записи есть файлы `stamps/NNNNNN.txt` и `stamps/NNNNNN.txt.ots`, где `NNNNNN` — номер записи («Запись №22» на странице → `000022`). Перетащите оба на https://opentimestamps.org или выполните `ots verify stamps/000022.txt.ots`. В `stamps/status.json` — в каком блоке подтверждена каждая запись.
+- **Отметки в Bitcoin.** У каждой записи есть файлы `stamps/NNNNNN.txt` и `stamps/NNNNNN.txt.ots`, где `NNNNNN` — поле `seq` записи в `ledger.jsonl`; на странице файлы записи даются ссылками в ответе кнопки «Проверить ставку». Перетащите оба на https://opentimestamps.org или выполните `ots verify stamps/000022.txt.ots`. В `stamps/status.json` — в каком блоке подтверждена каждая запись.
 - **Подпись.** Открытый ключ бота (Ed25519) — `pubkey.txt`.
 
 ## Файлы
