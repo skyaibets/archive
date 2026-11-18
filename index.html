@@ -127,11 +127,12 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
       <p>Исходники архива: <a href="https://github.com/skyaibets/archive" target="_blank" rel="noopener">github.com/skyaibets/archive</a>.</p></div></details>
     <details><summary>Как проверить отметку времени в блокчейне Bitcoin</summary><div class="body">
       <p>Кроме Интернет-архива, отпечаток каждой записи сразу отправляется в блокчейн Bitcoin через бесплатный сервис OpenTimestamps. В течение нескольких часов он попадает в блок, и после этого время записи можно доказать, даже если исчезнет и наш сайт, и Интернет-архив.</p>
+      <p>У каждого решения на странице написано, например, «Запись №22 · код cd0fbeb1». <b>Номер</b> — место записи в архиве, по нему называются её файлы. <b>Код</b> — первые 8 символов её отпечатка; тот же код стоит в посте со ставкой в канале (🔐).</p>
       <ol>
-        <li>Найдите номер записи: он виден в строке «Код записи» (наведите — появится номер и полный код).</li>
-        <li>Скачайте два файла этой записи из папки <a href="https://github.com/skyaibets/archive/tree/main/stamps" target="_blank" rel="noopener">stamps</a>: <code>000003.txt</code> (в нём номер и отпечаток записи) и <code>000003.txt.ots</code> (сама отметка). Номер дополняется нулями до шести цифр.</li>
-        <li>Откройте <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a>, перетащите файл <code>.ots</code> в блок «Stamp &amp; Verify», затем — файл <code>.txt</code>.</li>
-        <li>Сайт покажет: «Bitcoin block N attests existence as of …» — это дата, раньше которой запись уже существовала. Если отметка ещё не попала в блок, сайт напишет, что она ожидает подтверждения; подождите несколько часов.</li>
+        <li>Нажмите «Проверить ставку» (или «Проверить пропуск») у нужного решения. В самом низу ответа будут две ссылки — файлы этой записи, например <code>000022.txt</code> и <code>000022.txt.ots</code>. Скачайте оба. (Все файлы отметок лежат и в папке <a href="https://github.com/skyaibets/archive/tree/main/stamps" target="_blank" rel="noopener">stamps</a> на GitHub: номер записи, дополненный нулями до шести цифр.)</li>
+        <li>Откройте <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a> и перетащите файл <code>.ots</code> в блок «Stamp &amp; Verify», затем — файл <code>.txt</code>.</li>
+        <li>Сайт покажет: «Bitcoin block N attests existence as of …» — это дата, раньше которой запись уже существовала. Номер блока совпадёт с тем, что написан в проверке на нашей странице. Если отметка ещё не попала в блок, сайт напишет, что она ожидает подтверждения, — подождите несколько часов.</li>
+        <li>В файле <code>.txt</code> записан номер записи и её полный отпечаток — его можно сравнить с полем <code>hash</code> этой записи в <code>ledger.jsonl</code>.</li>
       </ol></div></details>
     <details><summary>Что такое подпись бота</summary><div class="body">
       <p>Каждая запись подписана секретным ключом, который есть только у бота. Подпись можно проверить открытым ключом — он опубликован здесь и в файле <code>pubkey.txt</code>: <code id="pubkey">…</code></p>
@@ -145,12 +146,13 @@ const rub=x=>Math.round(x).toLocaleString("ru-RU")+" ₽";
 const signed=x=>(x>0?"+":x<0?"−":"")+rub(Math.abs(x));
 const msk=ts=>new Date((ts+3*3600)*1000).toISOString().slice(0,16).replace("T"," ").replace(/^(\d+)-(\d+)-(\d+)/,"$3.$2.$1");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-let R=[],cfg={},snaps={},pub="",view={f:"all",pp:+(store.get("pp")||10),page:1},M={};
+let R=[],cfg={},snaps={},stamps={},pub="",view={f:"all",pp:+(store.get("pp")||10),page:1},M={};
 
 async function load(){
   const [l,c,k,s]=await Promise.all([fetch("ledger.jsonl",{cache:"no-store"}).then(r=>r.text()),
     fetch("config.json").then(r=>r.json()).catch(()=>({})),fetch("pubkey.txt").then(r=>r.text()).catch(()=>""),
     fetch("snapshots.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({}))]);
+  stamps=await fetch("stamps/status.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({}));
   R=l.split("\n").filter(Boolean).map(x=>JSON.parse(x));cfg=c;pub=k.trim();snaps=s;
   $("#pubkey").textContent=pub;index();render();if(location.hash)focusHash();
 }
@@ -200,7 +202,7 @@ function rowHtml(d,settle){
     <div class="stage">${d.action==="BET"?`<span id="r${d.seq}"></span>`:""}${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
     <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>
       <div class="links">${extra}${snapLink(d)}</div>
-      <div class="hash" title="Запись №${d.seq} · ${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
+      <div class="hash">Запись №${d.seq} · код ${d.hash.slice(0,8)}</div></div>
     <div class="side">${pill}<button class="ghost" data-check="${d.seq}">${d.action==="BET"?"Проверить ставку":"Проверить пропуск"}</button></div>
     <div class="check" id="check-${d.seq}" hidden></div></div>`;
 }
@@ -259,6 +261,8 @@ async function check(seq){
   if(d.action==="BET"&&total!==null){const won=d.side==="over"?total>d.line:total<d.line,push=total===d.line,r=M.results[d.bet_no];
     const said=r?(r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"):"ещё не рассчитана";const real=push?"возврат":won?"зашла":"не зашла";
     out.push(`<div class="step ${!r||said===real?"ok":"bad"}"><b>${!r||said===real?"✅":"❌"} ${total} убийств при линии ${d.line}: ставка на ${d.side==="over"?"больше":"меньше"} ${real}.</b> В архиве: ${said}.</div>`)}
+  const st=stamps[seq],file=`stamps/${String(seq).padStart(6,"0")}.txt`;
+  out.push(`<div class="step src">₿ Bitcoin: ${st&&st.block?`отметка записи №${seq} подтверждена в блоке <a href="https://mempool.space/block/${st.block}" target="_blank" rel="noopener">${st.block}</a>`:`отметка записи №${seq} ждёт попадания в блок (до нескольких часов)`}. Файлы для opentimestamps.org: <a href="${file}" download>${file.slice(7)}</a> и <a href="${file}.ots" download>${file.slice(7)}.ots</a></div>`);
   box.innerHTML=out.join("");
 }
 
