@@ -4,10 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sky AI Bets · архив</title>
-<meta name="description" content="Открытый архив всех решений Sky AI Bets: ставки и пропуски, записанные до конца матча, с подписью и отметкой времени в Bitcoin.">
+<meta name="description" content="Открытый архив всех решений Sky AI Bets: ставки и пропуски, записанные до конца матча.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl-fast.min.js"></script>
 <style>
 :root{--bg:#f4f5f8;--panel:#fff;--panel2:#eef0f5;--ink:#141824;--muted:#5d6577;--line:#dde1ea;--accent:#2f6df6;--ok:#16a06a;--okbg:#e3f6ee;--bad:#d64545;--badbg:#fbe7e7;--warn:#b7791f;--warnbg:#fdf3e1;--shadow:0 1px 2px rgba(20,24,36,.06),0 8px 24px rgba(20,24,36,.05);color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1118;--panel:#161b25;--panel2:#1d2330;--ink:#e8ebf2;--muted:#98a1b3;--line:#2a3140;--accent:#6b9bff;--ok:#3ccf8e;--okbg:#14301f;--bad:#ff7070;--badbg:#3a1a1c;--warn:#f0b04a;--warnbg:#3a2c12;--shadow:none;color-scheme:dark}}
@@ -16,19 +15,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Manrope,system
 .wrap{max-width:980px;margin:0 auto;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
 h1{font-size:clamp(24px,5vw,34px);line-height:1.15;margin:0;font-weight:800;text-wrap:balance}
 h2{font-size:18px;margin:0 0 10px}
+h3{font-size:14px;margin:14px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .lead{color:var(--muted);max-width:68ch;margin:6px 0 0}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);min-width:0}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px}
 .tile small{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .tile b{font:700 22px/1.2 'JetBrains Mono',monospace}
-.verify{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-button{font:600 15px Manrope,sans-serif;border:0;border-radius:10px;padding:11px 16px;background:var(--accent);color:#fff;cursor:pointer}
+button{font:600 14px Manrope,sans-serif;border:0;border-radius:9px;padding:8px 14px;background:var(--accent);color:#fff;cursor:pointer}
 button:disabled{opacity:.6;cursor:default}
-.vres{flex:1 1 280px;min-width:0}
-.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--muted)}
+button.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--muted)}.warn{color:var(--warn)}
 .chart{width:100%;height:180px;display:block}
-.filters{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.filters,.perpage{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px Manrope;cursor:pointer}
 .chip.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
 .maps{display:grid;gap:12px}
@@ -36,7 +36,7 @@ button:disabled{opacity:.6;cursor:default}
 .maph{padding:12px 16px;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line)}
 .maph b{font-size:16px}
 .maph .meta{color:var(--muted);font-size:13px}
-.row{display:grid;grid-template-columns:120px 1fr auto;gap:6px 12px;padding:10px 16px;border-top:1px solid var(--line);align-items:start}
+.row{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:6px 12px;padding:10px 16px;border-top:1px solid var(--line);align-items:start}
 .row:first-of-type{border-top:0}
 .row.bet{background:linear-gradient(90deg,var(--okbg),transparent 70%)}
 .row.hl{outline:2px solid var(--accent);outline-offset:-2px}
@@ -45,19 +45,32 @@ button:disabled{opacity:.6;cursor:default}
 .what{min-width:0}
 .what .main{font-weight:700}
 .what .sub{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
-.badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12px;white-space:nowrap}
-.pill{border-radius:999px;padding:2px 8px;font-weight:700;font-size:12px}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pill{border-radius:999px;padding:2px 8px;font-weight:700;font-size:12px;white-space:nowrap}
 .pill.win{background:var(--okbg);color:var(--ok)}.pill.lose{background:var(--badbg);color:var(--bad)}.pill.wait{background:var(--panel2);color:var(--muted)}
-.links{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin-top:4px}
+.links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:4px}
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-details summary{cursor:pointer;margin:6px 0}
-.hash{font:12px 'JetBrains Mono',monospace;color:var(--muted)}
+.hash{font:12px 'JetBrains Mono',monospace;color:var(--muted);margin-top:2px}
+.check{grid-column:1/-1;background:var(--panel2);border-radius:10px;padding:10px 14px;font-size:14px;display:grid;gap:8px}
+.check .src{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.check .step{display:grid;gap:2px}
 .res{padding:10px 16px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
-.steps{margin:0;padding-left:20px;display:grid;gap:8px;max-width:72ch}
+.pager{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center}
+.pager button{min-width:38px;padding:7px 10px}
+.pager button.cur{background:var(--ink);color:var(--panel)}
+.pager .gap{color:var(--muted);padding:0 4px}
+.count{color:var(--muted);font-size:13px;text-align:center}
+.faq details{border-top:1px solid var(--line);padding:4px 0}
+.faq details:first-of-type{border-top:0}
+.faq summary{cursor:pointer;font-weight:700;padding:8px 0;list-style:none;display:flex;gap:10px;align-items:flex-start}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";font:700 18px/1.1 Manrope;color:var(--accent);width:14px;flex:none}
+.faq details[open] summary::before{content:"−"}
+.faq .body{padding:0 0 12px 24px;max-width:74ch;display:grid;gap:8px}
+.faq ol{margin:0;padding-left:20px;display:grid;gap:6px}
 code,pre{font-family:'JetBrains Mono',monospace;font-size:13px}
-pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:auto;margin:6px 0 0}
-.note{border-left:3px solid var(--warn);background:var(--warnbg);padding:10px 14px;border-radius:8px;max-width:72ch}
-@media (max-width:560px){.row{grid-template-columns:1fr}.badges{align-items:flex-start;flex-direction:row;flex-wrap:wrap}}
+pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:auto;margin:0}
+@media (max-width:560px){.row{grid-template-columns:1fr}.side{align-items:flex-start;flex-direction:row;flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -65,45 +78,64 @@ pre{background:var(--panel2);border-radius:10px;padding:10px 12px;overflow-x:aut
   <header>
     <h1>Sky AI Bets — открытый архив</h1>
     <p class="lead">Здесь все решения бота по каждой карте из канала: и ставки, и пропуски. Каждое решение записывается в момент, когда оно принято, — до конца матча. После этого запись уже нельзя незаметно изменить или удалить, поэтому архиву можно верить: результаты не подгоняются, проигрыши не прячутся.</p>
-    <p class="lead">Архив ведётся с 17.11.2026, 21:00 МСК. Ставки №1 и №2 были сделаны раньше и добавлены вручную — они отмечены «добавлено вручную». Пропуски записываются начиная с запуска архива.</p>
+    <p class="lead">Архив ведётся с 17.11.2026, 21:00 МСК. Ставки №1 и №2 были сделаны раньше и добавлены вручную — они отмечены «добавлено вручную». Все последующие записи добавляются автоматически. Пропуски записываются начиная с запуска архива.</p>
   </header>
 
   <section class="tiles" id="tiles"></section>
 
-  <section class="card verify">
-    <div class="vres" id="vres"><b>Проверка архива</b><br><span class="muted">Нажмите — страница сама проверит каждую запись: что её не меняли после публикации и что её сделал бот этого канала. Занимает пару секунд.</span></div>
-    <button id="vbtn" disabled>Проверить архив</button>
-  </section>
-
   <section class="card"><h2>Банк по ставкам</h2><svg class="chart" id="chart" role="img" aria-label="График банка"></svg></section>
 
-  <section>
-    <div class="filters" id="filters">
+  <section class="toolbar">
+    <div class="filters">
       <button class="chip on" data-f="all">Все карты</button>
       <button class="chip" data-f="bets">Только со ставками</button>
     </div>
+    <div class="perpage"><span class="muted">На странице:</span>
+      <button class="chip" data-pp="10">10</button><button class="chip" data-pp="50">50</button><button class="chip" data-pp="100">100</button>
+    </div>
   </section>
   <section class="maps" id="maps"><p class="muted">Загружаю архив…</p></section>
+  <nav class="pager" id="pager" aria-label="Страницы"></nav>
+  <div class="count" id="count"></div>
 
-  <section class="card">
+  <section class="card faq">
     <h2>Как проверить самому</h2>
-    <ol class="steps">
-      <li><b>Время ставки — по Telegram.</b> Нажмите «пост со ставкой»: время публикации ставит сам Telegram, а если пост правили, он помечен «изменено».</li>
-      <li><b>Запись существовала до конца матча — по Интернет-архиву.</b> Нажмите «📸 снимок в Интернет-архиве». Это независимая некоммерческая библиотека интернета (archive.org): она сохраняет каждое решение сразу после того, как оно принято, и сама ставит дату и время снимка. Изменить снимок не можем ни мы, ни кто-либо ещё.</li>
-      <li><b>Результат — по OpenDota.</b> Под каждой картой ссылка «проверить в OpenDota» — там реальное число убийств в матче.</li>
-      <li><b>Ничего не удалено и не изменено — кнопкой «Проверить архив»</b> вверху страницы. Записи связаны в цепочку: если убрать или поправить хотя бы одну, проверка это покажет.</li>
-    </ol>
-    <p class="muted">Проигрыши не спрятать: по каждой карте из канала записаны все три момента — после драфта, 10-я и 15-я минута, — либо ставка, либо пропуск с причиной.</p>
-    <details>
-      <summary><b>Для специалистов</b></summary>
-      <ul class="steps">
-        <li>Весь архив одним файлом: <a href="https://github.com/skyaibets/archive/archive/refs/heads/main.zip">archive.zip</a>, исходники — <a href="https://github.com/skyaibets/archive" target="_blank" rel="noopener">github.com/skyaibets/archive</a>. Проверка цепочки и подписей без браузера: <code>python3 verify.py</code>.</li>
-        <li>Каждая запись также отмечена в блокчейне Bitcoin через OpenTimestamps: файлы <code>stamps/NNNNNN.txt</code> и <code>.ots</code>, проверка на <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a>.</li>
-        <li>Записи подписаны ключом бота (Ed25519): <code id="pubkey">…</code></li>
-      </ul>
-    </details>
-  </section>
+    <details><summary>Время ставки — по Telegram</summary><div class="body">
+      <p>Нажмите «Пост со ставкой»: время публикации ставит сам Telegram, а если пост правили, он помечен «изменено». Наши посты о ставках не меняются и остаются такими, какие были в момент ставки.</p></div></details>
+    <details><summary>Запись существовала до конца матча — по Интернет-архиву</summary><div class="body">
+      <p>Нажмите «Снимок в Интернет-архиве». Интернет-архив (archive.org) — независимая некоммерческая библиотека интернета. Сразу после каждого решения он сохраняет его отдельной страницей и сам ставит дату и время снимка. Изменить или подменить снимок не можем ни мы, ни кто-либо ещё.</p></div></details>
+    <details><summary>Результат — по OpenDota</summary><div class="body">
+      <p>Под каждой картой есть ссылка «Проверить в OpenDota». OpenDota — открытая статистика всех матчей Dota 2: там видно, когда закончился матч и сколько в нём было убийств.</p></div></details>
+    <details><summary>Что делает кнопка «Проверить ставку»</summary><div class="body">
+      <p>Она сама делает то же, что вы сделали бы вручную, — прямо из вашего браузера, без нашего участия:</p>
+      <ol><li>спрашивает у Интернет-архива, когда был сделан снимок этой записи;</li>
+      <li>спрашивает у OpenDota, когда закончился матч и сколько было убийств;</li>
+      <li>сравнивает: снимок должен быть раньше конца матча, а результат ставки — совпадать с реальным счётом.</li></ol>
+      <p>Под ответом показано, откуда пришли данные, — любую ссылку можно открыть и посмотреть самому.</p></div></details>
+    <details><summary>Почему проигрыши нельзя спрятать</summary><div class="body">
+      <p>По каждой карте, о которой вышел пост в канале, в архиве записаны все три момента — после драфта, 10-я и 15-я минута: либо ставка, либо пропуск с причиной. У каждого из них свой снимок в Интернет-архиве. Если бы мы удалили неудачную ставку, на её месте в карте был бы пробел, а снимок всё равно остался бы в Интернет-архиве.</p></div></details>
 
+    <h3>Для специалистов</h3>
+    <details><summary>Как скачать архив и проверить цепочку записей</summary><div class="body">
+      <p>Все записи хранятся в одном файле <code>ledger.jsonl</code> — по строке на запись. В каждой записи есть её «отпечаток» (<code>hash</code>, SHA-256 от содержимого) и отпечаток предыдущей записи (<code>prev_hash</code>). Поэтому записи связаны в цепочку: если изменить в старой записи хоть одну цифру, её отпечаток станет другим и перестанет совпадать со ссылкой в следующей записи.</p>
+      <ol>
+        <li>Скачайте архив: <a href="https://github.com/skyaibets/archive/archive/refs/heads/main.zip">archive.zip</a> и распакуйте.</li>
+        <li>Откройте терминал в распакованной папке и выполните <code>python3 verify.py</code>. Скрипт короткий, его можно прочитать перед запуском. Он выведет по каждой записи, что в ней, какой отпечаток он сам посчитал и совпадает ли он с записанным.</li>
+        <li>Чтобы увидеть, как ловится подделка, выполните <code>python3 verify.py --demo</code>: скрипт изменит коэффициент в одной из записей (только в памяти, файл не трогает) и покажет, где цепочка порвётся.</li>
+      </ol>
+      <p>Исходники архива: <a href="https://github.com/skyaibets/archive" target="_blank" rel="noopener">github.com/skyaibets/archive</a>.</p></div></details>
+    <details><summary>Как проверить отметку времени в блокчейне Bitcoin</summary><div class="body">
+      <p>Кроме Интернет-архива, отпечаток каждой записи сразу отправляется в блокчейн Bitcoin через бесплатный сервис OpenTimestamps. В течение нескольких часов он попадает в блок, и после этого время записи можно доказать, даже если исчезнет и наш сайт, и Интернет-архив.</p>
+      <ol>
+        <li>Найдите номер записи: он виден в строке «Код записи» (наведите — появится номер и полный код).</li>
+        <li>Скачайте два файла этой записи из папки <a href="https://github.com/skyaibets/archive/tree/main/stamps" target="_blank" rel="noopener">stamps</a>: <code>000003.txt</code> (в нём номер и отпечаток записи) и <code>000003.txt.ots</code> (сама отметка). Номер дополняется нулями до шести цифр.</li>
+        <li>Откройте <a href="https://opentimestamps.org" target="_blank" rel="noopener">opentimestamps.org</a>, перетащите файл <code>.ots</code> в блок «Stamp &amp; Verify», затем — файл <code>.txt</code>.</li>
+        <li>Сайт покажет: «Bitcoin block N attests existence as of …» — это дата, раньше которой запись уже существовала. Если отметка ещё не попала в блок, сайт напишет, что она ожидает подтверждения; подождите несколько часов.</li>
+      </ol></div></details>
+    <details><summary>Что такое подпись бота</summary><div class="body">
+      <p>Каждая запись подписана секретным ключом, который есть только у бота. Подпись можно проверить открытым ключом — он опубликован здесь и в файле <code>pubkey.txt</code>: <code id="pubkey">…</code></p>
+      <p>Подпись доказывает, что запись сделал именно бот этого канала, а не кто-то, выложивший похожий архив от нашего имени. Проверка подписей включается в <code>verify.py</code> после установки пакета <code>pip install pynacl</code>.</p></div></details>
+  </section>
 </div>
 <script>
 const STAGE={draft:"После драфта",min10:"10-я минута",min15:"15-я минута"};
@@ -111,99 +143,121 @@ const $=s=>document.querySelector(s);
 const rub=x=>Math.round(x).toLocaleString("ru-RU")+" ₽";
 const signed=x=>(x>0?"+":x<0?"−":"")+rub(Math.abs(x));
 const msk=ts=>new Date((ts+3*3600)*1000).toISOString().slice(0,16).replace("T"," ").replace(/^(\d+)-(\d+)-(\d+)/,"$3.$2.$1");
-let R=[],cfg={},status={},pub="",verdict={},snaps={};
-
-function canon(v){
-  if(Array.isArray(v))return "["+v.map(canon).join(",")+"]";
-  if(v&&typeof v==="object")return "{"+Object.keys(v).sort().map(k=>JSON.stringify(k)+":"+canon(v[k])).join(",")+"}";
-  return JSON.stringify(v);
-}
-async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let R=[],cfg={},snaps={},pub="",view={f:"all",pp:+(store.get("pp")||10),page:1},M={};
 
 async function load(){
-  const [l,c,s,k]=await Promise.all([fetch("ledger.jsonl",{cache:"no-store"}).then(r=>r.text()),
-    fetch("config.json").then(r=>r.json()).catch(()=>({})),fetch("stamps/status.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({})),
-    fetch("pubkey.txt").then(r=>r.text()).catch(()=>"")]);
-  snaps=await fetch("snapshots.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({}));
-  R=l.split("\n").filter(Boolean).map(x=>JSON.parse(x));cfg=c;status=s;pub=k.trim();
-  render();$("#vbtn").disabled=false;const pk=document.getElementById("pubkey");if(pk)pk.textContent=pub;
-  if(location.hash)setTimeout(focusHash,50);
+  const [l,c,k,s]=await Promise.all([fetch("ledger.jsonl",{cache:"no-store"}).then(r=>r.text()),
+    fetch("config.json").then(r=>r.json()).catch(()=>({})),fetch("pubkey.txt").then(r=>r.text()).catch(()=>""),
+    fetch("snapshots.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({}))]);
+  R=l.split("\n").filter(Boolean).map(x=>JSON.parse(x));cfg=c;pub=k.trim();snaps=s;
+  $("#pubkey").textContent=pub;index();render();if(location.hash)focusHash();
 }
 
-async function verifyAll(){
-  const btn=$("#vbtn");btn.disabled=true;let prev="GENESIS",bad=null,n=0;
-  const key=pub?b64(pub):null;
-  for(const r of R){
-    n++;const body={...r};delete body.hash;delete body.sig;
-    const h=await sha(canon(body));
-    let ok=r.seq===n&&r.prev_hash===prev&&h===r.hash;
-    let sigOk=false;try{sigOk=key&&window.nacl?nacl.sign.detached.verify(new TextEncoder().encode(r.hash),b64(r.sig),key):false}catch(e){}
-    verdict[r.seq]=ok&&sigOk;
-    if(!(ok&&sigOk)&&!bad)bad={seq:r.seq,why:!ok?"отпечаток или связь с предыдущей записью не сходится":"подпись не сходится"};
-    prev=r.hash;
-  }
-  const stamped=R.filter(r=>status[r.seq]).length, inBlock=R.filter(r=>status[r.seq]&&status[r.seq].block).length;
-  const nMaps=R.filter(r=>r.type==="MAP").length,nBets=R.filter(r=>r.type==="DECISION"&&r.action==="BET").length,nSkips=R.filter(r=>r.type==="DECISION"&&r.action==="SKIP").length;
-  $("#vres").innerHTML=bad?`<b class="bad">❌ Найдено изменение</b><br>Одна из записей отличается от той, что была опубликована. Пожалуйста, сообщите нам.`
-   :`<b class="ok">✅ Всё в порядке</b><br><span class="muted">Проверены все карты (${nMaps}), ставки (${nBets}) и пропуски (${nSkips}), а также итоги карт: ничего не изменено и не удалено после публикации.</span>`;
-  btn.disabled=false;btn.textContent="Проверить ещё раз";render();
-}
-
-function render(){
-  const maps={},order=[];
+function index(){
+  const maps={},order=[],bySeq={};R.forEach(r=>bySeq[r.seq]=r);
+  const posts={},rechecks={},results={};
   for(const r of R){
     if(r.type==="MAP"){maps[r.map]={m:r,dec:[],settle:null,post:null};order.push(r.map)}
-  }
-  const bySeq={};R.forEach(r=>bySeq[r.seq]=r);
-  const posts={};R.filter(r=>r.type==="POST").forEach(p=>posts[p.of_seq]=p.post_id);
-  const rechecks={};R.filter(r=>r.type==="RECHECK").forEach(x=>rechecks[x.bet_no]=x);
-  const results={};
-  for(const r of R){
+    if(r.type==="POST"){posts[r.of_seq]=r.post_id;const o=bySeq[r.of_seq];if(o&&o.type==="MAP"&&maps[o.map])maps[o.map].post=r.post_id}
+    if(r.type==="RECHECK")rechecks[r.bet_no]=r;
     if(r.type==="DECISION"&&maps[r.map])maps[r.map].dec.push(r);
     if(r.type==="SETTLE"&&maps[r.map]){maps[r.map].settle=r;r.bets.forEach(b=>results[b.bet_no]=b)}
-    if(r.type==="POST"&&bySeq[r.of_seq]&&bySeq[r.of_seq].type==="MAP")maps[bySeq[r.of_seq].map].post=r.post_id;
   }
-  const bets=R.filter(r=>r.type==="DECISION"&&r.action==="BET");
-  const done=bets.filter(b=>results[b.bet_no]);
-  const profit=done.reduce((s,b)=>s+results[b.bet_no].profit,0), staked=done.reduce((s,b)=>s+b.stake,0);
-  const won=done.filter(b=>results[b.bet_no].profit>0).length;
-  const bank=done.length?results[done[done.length-1].bet_no].bank_after:100000;
+  M={maps,order:order.reverse(),posts,rechecks,results};
+}
+
+function tiles(){
+  const bets=R.filter(r=>r.type==="DECISION"&&r.action==="BET"),done=bets.filter(b=>M.results[b.bet_no]);
+  const profit=done.reduce((s,b)=>s+M.results[b.bet_no].profit,0),staked=done.reduce((s,b)=>s+b.stake,0);
+  const won=done.filter(b=>M.results[b.bet_no].profit>0).length;
+  const bank=done.length?M.results[done[done.length-1].bet_no].bank_after:100000;
   const skips=R.filter(r=>r.type==="DECISION"&&r.action==="SKIP").length;
-  $("#tiles").innerHTML=[["Банк",rub(bank)],["Ставок",`${bets.length}`],["Зашло",done.length?`${won} из ${done.length}`:"—"],
-    ["ROI",staked?(profit/staked*100).toFixed(1)+"%":"—"],["Карт",`${order.length}`],["Пропусков",`${skips}`]]
+  $("#tiles").innerHTML=[["Банк",rub(bank)],["Ставок",bets.length],["Зашло",done.length?`${won} из ${done.length}`:"—"],
+    ["ROI",staked?(profit/staked*100).toFixed(1)+"%":"—"],["Карт",M.order.length],["Пропусков",skips]]
     .map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join("");
-  drawChart(done.map(b=>results[b.bet_no].bank_after));
-  const f=document.querySelector(".chip.on").dataset.f;
-  const ch=cfg.channel;
-  const link=(id,label)=>ch&&id?`<a href="https://t.me/${ch}/${id}" target="_blank" rel="noopener">${label}</a>`:"";
-  const stampFile=seq=>`stamps/${String(seq).padStart(6,"0")}.txt`;
-  const stampBadge=seq=>{const s=status[seq];
-    const t=s&&s.block?`₿ время закреплено`:`₿ закрепляется`;
-    return `<a href="${stampFile(seq)}.ots" title="Отметка времени в Bitcoin: файлы ${stampFile(seq)} и .ots для opentimestamps.org" class="${s&&s.block?"":"muted"}">${t}</a>`};
-  const snapLink=(seq,late)=>{const x=snaps[seq];if(!x)return `<span class="muted">📸 снимок в Интернет-архиве появится через пару минут</span>`;
-    const t=x.at,d=new Date(Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12)));
-    return `<a href="${x.url}" target="_blank" rel="noopener">📸 снимок в Интернет-архиве · ${msk(d.getTime()/1000)} МСК</a>${late?` <span class="muted">(сделан при добавлении вручную, после матча)</span>`:""}`};
-  const vb=seq=>verdict[seq]===undefined?"":verdict[seq]?`<span class="ok">✅ проверено</span>`:`<span class="bad">❌ не прошла проверку</span>`;
-  const html=order.slice().reverse().filter(k=>f==="all"||maps[k].dec.some(d=>d.action==="BET")).map(k=>{
-    const {m,dec,settle,post}=maps[k];
-    const rows=dec.map(d=>{
-      const book=d.book?`БК ${d.book.line} (больше ${d.book.over} / меньше ${d.book.under})`:d.backfilled?"линия БК не записана (до запуска архива)":"у БК не было линии";
-      let main,cls="",extra="";
-      if(d.action==="BET"){
-        cls="bet";const r=results[d.bet_no];const rc=rechecks[d.bet_no];
-        main=`🎯 Ставка №${d.bet_no}: ${d.side==="over"?"больше":"меньше"} ${d.line} · кэф ${d.odds} · ${rub(d.stake)}`;
-        extra=`<div class="links">${link(posts[d.seq],"пост со ставкой")}${d.screen_sha256?` <a href="screens/${d.screen_sha256}.jpg" target="_blank">скриншот BetBoom</a>`:""}${rc?` <span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}</div>`;
-        var pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
-      }else{main=`⏸ Пропуск`;var pill="";}
-      return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
-        <div class="stage">${d.action==="BET"?`<span id="r${d.seq}"></span>`:""}${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
-        <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>${extra}<div class="links">${snapLink(d.seq,d.backfilled)}</div><div class="hash" title="${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
-        <div class="badges">${pill}${vb(d.seq)}</div></div>`}).join("")||`<div class="row"><div class="what muted" style="grid-column:1/-1">Решений пока нет — первое появится после драфта</div></div>`;
-    const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
+  drawChart(done.map(b=>M.results[b.bet_no].bank_after));
+}
+
+const ch=()=>cfg.channel;
+const tg=(id,label)=>ch()&&id?`<a href="https://t.me/${ch()}/${id}" target="_blank" rel="noopener">${label}</a>`:"";
+function snapTime(x){const t=x.at;return Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12),+t.slice(12,14))/1000}
+function snapLink(d){const x=snaps[d.seq];
+  if(!x)return `<span class="muted">Снимок в Интернет-архиве появится через пару минут</span>`;
+  return `<a href="${x.url}" target="_blank" rel="noopener">Снимок в Интернет-архиве · ${msk(snapTime(x))} МСК</a>${d.backfilled?` <span class="muted">(сделан при добавлении вручную, после матча)</span>`:""}`}
+
+function rowHtml(d,settle){
+  const book=d.book?`БК ${d.book.line} (больше ${d.book.over} / меньше ${d.book.under})`:d.backfilled?"линия БК не записана (до запуска архива)":"у БК не было линии";
+  let main,cls="",extra="",pill="";
+  if(d.action==="BET"){
+    cls="bet";const r=M.results[d.bet_no],rc=M.rechecks[d.bet_no];
+    main=`🎯 Ставка №${d.bet_no}: ${d.side==="over"?"больше":"меньше"} ${d.line} · кэф ${d.odds} · ${rub(d.stake)}`;
+    extra=`${tg(M.posts[d.seq],"Пост со ставкой")}${d.screen_sha256?`<a href="screens/${d.screen_sha256}.jpg" target="_blank">Скриншот линии</a>`:""}${rc?`<span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}`;
+    pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
+  }else main=`⏸ Пропуск`;
+  return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
+    <div class="stage">${d.action==="BET"?`<span id="r${d.seq}"></span>`:""}${STAGE[d.stage]||d.stage}<small>${msk(d.ts)} МСК</small></div>
+    <div class="what"><div class="main">${main}</div><div class="sub">${book} · модель ждёт ~${Math.round(d.model_total)}${d.reason?" — "+d.reason:""}</div>
+      <div class="links">${extra}${snapLink(d)}</div>
+      <div class="hash" title="Запись №${d.seq} · ${d.hash}">Код записи: ${d.hash.slice(0,8)}</div></div>
+    <div class="side">${pill}<button class="ghost" data-check="${d.seq}">${d.action==="BET"?"Проверить ставку":"Проверить пропуск"}</button></div>
+    <div class="check" id="check-${d.seq}" hidden></div></div>`;
+}
+
+function filtered(){return M.order.filter(k=>view.f==="all"||M.maps[k].dec.some(d=>d.action==="BET"))}
+
+function render(){
+  tiles();
+  const list=filtered(),pages=Math.max(1,Math.ceil(list.length/view.pp));
+  view.page=Math.min(Math.max(1,view.page),pages);
+  const part=list.slice((view.page-1)*view.pp,view.page*view.pp);
+  $("#maps").innerHTML=part.map(k=>{
+    const {m,dec,settle,post}=M.maps[k];
+    const rows=dec.map(d=>rowHtml(d,settle)).join("")||`<div class="row"><div class="what muted" style="grid-column:1/-1">Решений пока нет — первое появится после драфта</div></div>`;
+    const res=settle?`Итог карты: <b>${settle.total_kills}</b> убийств${settle.opendota_match_id?` · <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Проверить в OpenDota</a>`:""}`:"Карта ещё не рассчитана";
     return `<article class="map"><div class="maph"><b>${m.radiant} — ${m.dire}${m.game_no?" · карта "+m.game_no:""}</b>
-      <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+link(post,"пост о карте"):""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("");
-  $("#maps").innerHTML=html||`<p class="muted">Записей пока нет.</p>`;
+      <span class="meta">${m.league} · ${msk(m.ts)} МСК ${post?"· "+tg(post,"Пост о карте"):""}${m.backfilled?" · добавлено вручную":""}</span></div>${rows}<div class="res">${res}</div></article>`}).join("")||`<p class="muted">Записей пока нет.</p>`;
+  pager(pages);
+  $("#count").textContent=list.length?`Карты ${(view.page-1)*view.pp+1}–${Math.min(view.page*view.pp,list.length)} из ${list.length}`:"";
+  document.querySelectorAll("[data-pp]").forEach(b=>b.classList.toggle("on",+b.dataset.pp===view.pp));
+}
+
+function pager(pages){
+  if(pages<2){$("#pager").innerHTML="";return}
+  const p=view.page,nums=new Set([1,2,pages-1,pages,p-1,p,p+1].filter(n=>n>=1&&n<=pages));
+  const sorted=[...nums].sort((a,b)=>a-b);let html=`<button class="ghost" data-page="${p-1}" ${p===1?"disabled":""} aria-label="Назад">‹</button>`,last=0;
+  for(const n of sorted){if(n-last>1)html+=`<span class="gap">…</span>`;html+=`<button class="${n===p?"cur":"ghost"}" data-page="${n}">${n}</button>`;last=n}
+  html+=`<button class="ghost" data-page="${p+1}" ${p===pages?"disabled":""} aria-label="Вперёд">›</button>`;
+  $("#pager").innerHTML=html;
+}
+
+async function check(seq){
+  const d=R.find(r=>r.seq===seq),box=$("#check-"+seq);box.hidden=false;
+  const map=M.maps[d.map]||{},settle=map.settle;
+  const pageUrl=`${cfg.page||location.href.split("#")[0].split("?")[0]}d/${seq}.html`;
+  box.innerHTML=`<div class="muted">Спрашиваю Интернет-архив${settle&&settle.opendota_match_id?" и OpenDota":""}…</div>`;
+  const out=[];let snapAt=null,endAt=null,total=null;
+  const waUrl=`https://archive.org/wayback/available?url=${encodeURIComponent(pageUrl)}&timestamp=19700101`;
+  try{const j=await fetch(waUrl).then(r=>r.json()),c=j.archived_snapshots&&j.archived_snapshots.closest;
+    if(c&&c.available){snapAt=snapTime({at:c.timestamp});
+      out.push(`<div class="step">📸 <b>Интернет-архив:</b> снимок этой записи сделан ${msk(snapAt)} МСК. <a href="${c.url.replace("http://","https://")}" target="_blank" rel="noopener">Открыть снимок</a><span class="src">Запрос: ${waUrl}</span></div>`)}
+    else out.push(`<div class="step warn">📸 Интернет-архив пока не нашёл снимок этой записи — он появляется через несколько минут после решения.<span class="src">Запрос: ${waUrl}</span></div>`)}
+  catch(e){out.push(`<div class="step warn">Интернет-архив сейчас не ответил, попробуйте чуть позже.</div>`)}
+  if(settle&&settle.opendota_match_id){
+    const odUrl=`https://api.opendota.com/api/matches/${settle.opendota_match_id}`;
+    try{const j=await fetch(odUrl).then(r=>r.json());
+      if(j.start_time){endAt=j.start_time+j.duration;total=(j.radiant_score||0)+(j.dire_score||0);
+        out.push(`<div class="step">🎮 <b>OpenDota:</b> матч закончился ${msk(endAt)} МСК, убийств на карте — ${total}. <a href="https://www.opendota.com/matches/${settle.opendota_match_id}" target="_blank" rel="noopener">Открыть матч</a><span class="src">Запрос: ${odUrl}</span></div>`)}}
+    catch(e){out.push(`<div class="step warn">OpenDota сейчас не ответил, попробуйте чуть позже.</div>`)}
+  }else out.push(`<div class="step muted">🎮 Матч ещё не закончился или ещё не появился в OpenDota.</div>`);
+  if(snapAt&&endAt){const mins=Math.round((endAt-snapAt)/60);
+    out.push(mins>0?`<div class="step ok"><b>✅ Запись сделана за ${mins} мин до конца матча</b> — исход тогда ещё не был известен.</div>`
+      :d.backfilled?`<div class="step warn"><b>Снимок сделан после матча</b> — эта ставка была до запуска архива и добавлена вручную, о чём сказано вверху страницы.</div>`
+      :`<div class="step bad"><b>❌ Снимок сделан после конца матча.</b></div>`)}
+  if(d.action==="BET"&&total!==null){const won=d.side==="over"?total>d.line:total<d.line,push=total===d.line,r=M.results[d.bet_no];
+    const said=r?(r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"):"ещё не рассчитана";const real=push?"возврат":won?"зашла":"не зашла";
+    out.push(`<div class="step ${!r||said===real?"ok":"bad"}"><b>${!r||said===real?"✅":"❌"} ${total} убийств при линии ${d.line}: ставка на ${d.side==="over"?"больше":"меньше"} ${real}.</b> В архиве: ${said}.</div>`)}
+  box.innerHTML=out.join("");
 }
 
 function drawChart(vals){
@@ -219,11 +273,20 @@ function drawChart(vals){
     <text x="${W-p}" y="${y(pts[pts.length-1])-8}" font-size="12" font-weight="700" text-anchor="end" fill="var(--ink)">${rub(pts[pts.length-1])}</text>`;
 }
 
-function focusHash(){const el=document.getElementById(location.hash.slice(1));if(el){el.classList.add("hl");el.scrollIntoView({block:"center"})}}
-document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");render()});
-$("#vbtn").onclick=verifyAll;
+function focusHash(){
+  const id=location.hash.slice(1);let el=document.getElementById(id);
+  if(!el){const seq=id.startsWith("bet-")?(R.find(r=>r.type==="DECISION"&&r.bet_no===+id.slice(4))||{}).seq:+id.slice(1);
+    const d=R.find(r=>r.seq===seq);if(d){view.f="all";document.querySelectorAll("[data-f]").forEach(b=>b.classList.toggle("on",b.dataset.f==="all"));
+      view.page=Math.floor(filtered().indexOf(d.map)/view.pp)+1;render();el=document.getElementById(id)}}
+  if(el){const row=el.closest(".row")||el;row.classList.add("hl");row.scrollIntoView({block:"center"})}
+}
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.f){view.f=b.dataset.f;view.page=1;document.querySelectorAll("[data-f]").forEach(x=>x.classList.toggle("on",x===b));render()}
+  else if(b.dataset.pp){view.pp=+b.dataset.pp;view.page=1;store.set("pp",view.pp);render()}
+  else if(b.dataset.page){view.page=+b.dataset.page;render();$("#maps").scrollIntoView({block:"start"})}
+  else if(b.dataset.check){check(+b.dataset.check)}});
 addEventListener("hashchange",focusHash);
-addEventListener("resize",()=>R.length&&render());
+addEventListener("resize",()=>R.length&&drawChart(R.filter(r=>r.type==="DECISION"&&r.action==="BET"&&M.results[r.bet_no]).map(b=>M.results[b.bet_no].bank_after)));
 load().catch(e=>{$("#maps").innerHTML=`<p class="bad">Не удалось загрузить архив: ${e}</p>`});
 </script>
 </body>
