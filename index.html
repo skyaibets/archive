@@ -52,6 +52,7 @@ button.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--lin
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 .hash{font:12px 'JetBrains Mono',monospace;color:var(--muted);margin-top:2px}
 .check{grid-column:1/-1;background:var(--panel2);border-radius:10px;padding:10px 14px;font-size:14px;display:grid;gap:8px}
+.check[hidden]{display:none}
 .check .src{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .check .step{display:grid;gap:2px}
 .res{padding:10px 16px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
@@ -192,7 +193,7 @@ function rowHtml(d,settle){
   if(d.action==="BET"){
     cls="bet";const r=M.results[d.bet_no],rc=M.rechecks[d.bet_no];
     main=`🎯 Ставка №${d.bet_no}: ${d.side==="over"?"больше":"меньше"} ${d.line} · кэф ${d.odds} · ${rub(d.stake)}`;
-    extra=`${tg(M.posts[d.seq],"Пост со ставкой")}${d.screen_sha256?`<a href="screens/${d.screen_sha256}.jpg" target="_blank">Скриншот линии</a>`:""}${rc?`<span>через ${rc.waited_s} с: линия ${rc.line??"—"}, кэф ${rc.odds??"—"}</span>`:""}`;
+    extra=`${tg(M.posts[d.seq],"Пост со ставкой")}${d.screen_sha256?`<a href="screens/${d.screen_sha256}.jpg" target="_blank">Скриншот линии</a>`:""}${rc?`<span>${rc.line!=null?`через ${rc.waited_s} с: линия ${rc.line}, кэф ${rc.odds}`:`через ${rc.waited_s} с линия не обновилась`}</span>`:""}`;
     pill=r?`<span class="pill ${r.profit>0?"win":r.profit<0?"lose":"wait"}">${r.profit>0?"зашла":r.profit<0?"не зашла":"возврат"} ${signed(r.profit)}</span>`:`<span class="pill wait">ждёт итога</span>`;
   }else main=`⏸ Пропуск`;
   return `<div class="row ${cls}" id="${d.action==="BET"?"bet-"+d.bet_no:"r"+d.seq}">
