@@ -1,4 +1,4 @@
-# Sky AI Bets — открытый архив
+# SKYNET Bets — открытый архив
 
 **Страница архива:** https://skyaibets.github.io/archive/
 
